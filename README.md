@@ -1,149 +1,173 @@
+# LUGAI — Latent Uncertainty Guided Adversary Intervention
 
-LUGAI — Latent Uncertainty Guided Adversary Intervention
-=======================================================
+## 1. Introduction
 
-Project Group No: 30  
-Scholars:  
-- **Jayal Shah** — [LinkedIn](https://www.linkedin.com/in/jayal-shah04/)  
-- **Sakshi Makwana** — [LinkedIn](https://www.linkedin.com/in/sakshii125/)  
-- **Mayank Jangid** — [LinkedIn](https://www.linkedin.com/in/mayank-jangid-0a5207359/)
+Deep learning models have achieved state-of-the-art performance across numerous computer vision tasks. However, their susceptibility to adversarial examples, inputs that are minimally perturbed yet cause incorrect predictions—remains a fundamental challenge. These adversarial examples exploit the high-dimensional and non-linear nature of neural networks, leading to unreliable behavior under adversarial conditions.
 
-Supervisor: **Dr. Sanjay B. Sonar**
+Most existing defense mechanisms rely on adversarial training, which requires retraining models on adversarial data and significantly increases training cost. Moreover, such defenses often fail against unseen or adaptive attacks. This project explores an alternative paradigm: **post-hoc defense through detection and correction**, rather than retraining.
 
-Demo
-----
-Below is a screenshot of the **LUGAI Streamlit application**, which demonstrates detection and purification of adversarial inputs in real time.
 
-![LUGAI Demo Screenshot](results/figures/image.png)
+## 2. Motivation
 
-Overview
---------
-LUGAI is a two-stage, self-healing framework designed to defend deep neural networks against adversarial inputs. The framework detects anomalous inputs using latent uncertainty and reconstruction deviation, then restores input integrity using a denoising autoencoder prior to classification. The implementation is in Python and PyTorch, and uses Torchattacks for adversarial example generation and Streamlit for an interactive demonstration.
+The motivation behind LUGAI is based on two key observations:
 
-Status (completed so far)
--------------------------
-- Project repository initialized and organized.
-- Virtual environment configured and dependencies installed.
-- MNIST dataset downloaded and preprocessed into Torch `.pt` tensors.
-- Baseline CNN implemented and trained (saved to `models/cnn_classifier.pth`).
-- Adversarial attacks implemented and evaluated: FGSM, PGD, DeepFool.
-- Visualization utilities implemented to compare clean, attacked, and purified images.
-- Streamlit app integrated for real-time adversarial detection and purification.
+1. Adversarial inputs often produce abnormal behavior in the latent feature representations of neural networks.
+2. While adversarial perturbations mislead classifiers, they typically preserve the semantic structure of the original input.
 
-Results (example)
------------------
-Representative results on the MNIST test set:
+By leveraging these properties, LUGAI aims to:
 
-- Clean Model Accuracy: 99.28%
-- Attacked (FGSM, eps=0.3) Accuracy: 22.97%
-- Purified (LUGAI) Accuracy: 93.02%
-- Accuracy Recovery Rate: 91.80%
+* Identify adversarial inputs through latent-space irregularities.
+* Restore corrupted inputs using learned denoising transformations.
+* Maintain high classification accuracy without modifying the original classifier.
 
-Quickstart
-----------
-All scripts are located in the project root directory. Run commands from the root folder.
 
-1. Clone the repository
+## 3. System Overview
+
+LUGAI operates as a two-stage defense pipeline:
+
+1. **Detection Stage**
+   Latent uncertainty and reconstruction deviation are used to determine whether an input is adversarial.
+
+2. **Purification Stage**
+   A denoising autoencoder is applied to detected adversarial inputs to remove perturbations before final classification.
+
+This design ensures that clean inputs are processed efficiently, while adversarial inputs undergo corrective intervention.
+
+
+## 4. Adversarial Threat Model
+
+This project considers white-box adversarial attacks, where the attacker has access to the model architecture and parameters. The following attacks are implemented:
+
+* **Fast Gradient Sign Method (FGSM)**
+  Generates adversarial samples using a single gradient step in the direction of maximum loss increase.
+
+* **Projected Gradient Descent (PGD)**
+  An iterative extension of FGSM that produces stronger adversarial examples.
+
+* **DeepFool**
+  An optimization-based attack that finds minimal perturbations required to change the model’s prediction.
+
+These attacks serve as benchmarks to evaluate the robustness of the proposed defense.
+
+
+## 5. Latent Uncertainty-Based Detection
+
+Traditional confidence-based detection methods are insufficient, as neural networks often assign high confidence to adversarial inputs. LUGAI instead relies on latent uncertainty, which captures instability in internal feature representations.
+
+Detection is performed using:
+
+* Reconstruction error from an autoencoder trained on clean data.
+* Statistical deviation in latent representations compared to clean input distributions.
+
+Inputs exceeding predefined uncertainty thresholds are flagged as adversarial.
+
+
+## 6. Denoising Autoencoder for Purification
+
+The purification stage employs a denoising autoencoder trained to map adversarial inputs back to their clean counterparts. The model is trained using adversarial-clean image pairs, minimizing mean squared reconstruction error.
+
+Formally, the training objective is:
+
+$$[
+\min_{\theta} \mathbb{E}*{(x*{adv}, x)} \left[ | x - DAE_\theta(x_{adv}) |_2^2 \right]
+]$$
+
+This enables the system to remove adversarial noise while preserving semantic content.
+
+
+## 7. Methodology
+
+The experimental workflow is as follows:
+
+1. Train a baseline convolutional neural network classifier on clean MNIST data.
+2. Generate adversarial examples using FGSM, PGD, and DeepFool.
+3. Train a denoising autoencoder on adversarial-clean image pairs.
+4. Detect adversarial inputs using latent uncertainty metrics.
+5. Purify detected inputs prior to final classification.
+6. Evaluate performance in terms of accuracy, detection rate, and recovery rate.
+
+
+## 8. Experimental Results
+
+Experiments were conducted on the MNIST dataset. The following results summarize the effectiveness of LUGAI:
+
+| Scenario                       | Classification Accuracy |
+| ------------------------------ | ----------------------- |
+| Clean Inputs                   | 99.28%                  |
+| FGSM Attacked Inputs (ε = 0.3) | 22.97%                  |
+| After LUGAI Purification       | 93.02%                  |
+| Accuracy Recovery Rate         | 91.80%                  |
+
+These results demonstrate that LUGAI substantially mitigates the impact of adversarial attacks without retraining the classifier.
+
+
+## 9. Installation and Execution
+
+### Environment Setup
+
 ```bash
-git clone https://github.com/014-Jayal/LUGAI-Adversarial-Defense.git
-cd LUGAI-Adversarial-Defense
-```
-
-2. Create and activate a virtual environment
-```bash
-# Windows
 python -m venv venv
-.\venv\Scripts\activate
-
-# macOS / Linux
-python3 -m venv venv
-source venv/bin/activate
-```
-
-3. Install dependencies
-```bash
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Prepare the dataset (download and preprocess MNIST)
+### Dataset Preparation
+
 ```bash
 python data_utils.py
 ```
 
-5. Train models
-```bash
-# Train the baseline CNN classifier
-python train_baseline.py
+### Training
 
-# Train the denoising autoencoder (DAE) used for purification
+```bash
+python train_baseline.py
 python train_denoising_autoencoder.py
 ```
 
-6. Evaluate attacks and purification
-```bash
-# Evaluate baseline and attacked accuracy
-python evaluate_attacks.py
+### Evaluation
 
-# Evaluate purification (requires trained DAE)
-python evaluate_purification.py
-```
-
-7. Run the interactive demo
-```bash
-streamlit run app.py
-```
-Open the URL shown by Streamlit (typically http://localhost:8501) in a browser.
-
-Reproducing Results and Experiments
-----------------------------------
-Use the evaluation and visualization scripts to reproduce results:
 ```bash
 python evaluate_attacks.py
 python evaluate_detection.py
 python evaluate_purification.py
-python visualize_attacks.py
-python visualize_purification.py
 ```
 
-Repository structure
---------------------
-```
-LUGAI-Adversarial-Defense/
-├── app.py
-├── config.py
-├── data_utils.py
-├── model_zoo.py
-├── attacks.py
-├── defense.py
-├── visualize.py
-├── train_baseline.py
-├── train_autoencoder.py
-├── train_denoising_autoencoder.py
-├── evaluate_attacks.py
-├── evaluate_detection.py
-├── evaluate_purification.py
-├── visualize_attacks.py
-├── visualize_purification.py
-├── data/
-├── models/
-├── results/
-│   └── figures/
-├── notebooks/
-├── requirements.txt
-├── .gitignore
-└── README.md
+### Interactive Demonstration
+
+```bash
+streamlit run app.py
 ```
 
-Technologies Used
------------------
-- **Programming Language:** Python 3.11  
-- **Frameworks/Libraries:** PyTorch, Torchattacks, Streamlit  
-- **Data:** MNIST dataset  
-- **Utilities:** NumPy, Matplotlib, Seaborn, Scikit-learn, Tqdm  
-- **Version Control:** Git & GitHub  
 
-Notes and Recommendations
--------------------------
-- Do not commit large datasets or model checkpoint files to the repository. Use `.gitignore` or Git LFS for large artifacts.
-- For sharing pre-trained weights, provide a Google Drive or GitHub Release link.
+## 10. Limitations
+
+* Evaluation is limited to the MNIST dataset.
+* Fixed detection thresholds may be vulnerable to adaptive adversaries.
+* Autoencoder capacity limits scalability to higher-resolution datasets.
+
+
+## 11. Future Scope
+
+* Extension to CIFAR-10 and ImageNet
+* Adaptive thresholding mechanisms
+* Defense against adaptive adversarial attacks
+* Latent-space explainability and interpretability analysis
+* Deployment-oriented optimization for real-time systems
+
+
+## 12. Project Information
+
+**Supervisor:** Dr. Sanjay B. Sonar
+
+**Contributors:**
+- Jayal Shah
+- Sakshi Makwana
+- Mayank Jangid
+
+
+## 13.Demo
+
+Below is a screenshot of the **LUGAI Streamlit application**, which demonstrates detection and purification of adversarial inputs in real time.
+
+![LUGAI Demo Screenshot](results/figures/image.png)
 
