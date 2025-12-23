@@ -1,4 +1,4 @@
-# LUGAI — Latent Uncertainty Guided Adversary Intervention
+# LUGAI - Latent Uncertainty Guided Adversary Intervention
 
 ## 1. Introduction
 
