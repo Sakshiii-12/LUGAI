@@ -1,14 +1,12 @@
 # LUGAI - Latent Uncertainty Guided Adversary Intervention
 
 ## Introduction
-
 Deep learning models have achieved state-of-the-art performance across numerous computer vision tasks. However, their susceptibility to adversarial examples, inputs that are minimally perturbed yet cause incorrect predictions—remains a fundamental challenge. These adversarial examples exploit the high-dimensional and non-linear nature of neural networks, leading to unreliable behavior under adversarial conditions.
 
 Most existing defense mechanisms rely on adversarial training, which requires retraining models on adversarial data and significantly increases training cost. Moreover, such defenses often fail against unseen or adaptive attacks. This project explores an alternative paradigm: **post-hoc defense through detection and correction**, rather than retraining.
 
 
 ## Motivation
-
 The motivation behind LUGAI is based on two key observations:
 
 1. Adversarial inputs often produce abnormal behavior in the latent feature representations of neural networks.
@@ -22,7 +20,6 @@ By leveraging these properties, LUGAI aims to:
 
 
 ## System Overview
-
 LUGAI operates as a two-stage defense pipeline:
 
 1. **Detection Stage**
@@ -35,7 +32,6 @@ This design ensures that clean inputs are processed efficiently, while adversari
 
 
 ##  Adversarial Threat Model
-
 This project considers white-box adversarial attacks, where the attacker has access to the model architecture and parameters. The following attacks are implemented:
 
 * **Fast Gradient Sign Method (FGSM)**
@@ -51,7 +47,6 @@ These attacks serve as benchmarks to evaluate the robustness of the proposed def
 
 
 ## Latent Uncertainty-Based Detection
-
 Traditional confidence-based detection methods are insufficient, as neural networks often assign high confidence to adversarial inputs. LUGAI instead relies on latent uncertainty, which captures instability in internal feature representations.
 
 Detection is performed using:
@@ -63,7 +58,6 @@ Inputs exceeding predefined uncertainty thresholds are flagged as adversarial.
 
 
 ## Denoising Autoencoder for Purification
-
 The purification stage employs a denoising autoencoder trained to map adversarial inputs back to their clean counterparts. The model is trained using adversarial-clean image pairs, minimizing mean squared reconstruction error.
 
 Formally, the training objective is:
@@ -76,7 +70,6 @@ This enables the system to remove adversarial noise while preserving semantic co
 
 
 ## Methodology
-
 The experimental workflow is as follows:
 
 1. Train a baseline convolutional neural network classifier on clean MNIST data.
@@ -88,7 +81,6 @@ The experimental workflow is as follows:
 
 
 ## Experimental Results
-
 Experiments were conducted on the MNIST dataset. The following results summarize the effectiveness of LUGAI:
 
 | Scenario                       | Classification Accuracy |
@@ -102,7 +94,6 @@ These results demonstrate that LUGAI substantially mitigates the impact of adver
 
 
 ## Installation and Execution
-
 ### Environment Setup
 
 ```bash
@@ -125,7 +116,6 @@ python train_denoising_autoencoder.py
 ```
 
 ### Evaluation
-
 ```bash
 python evaluate_attacks.py
 python evaluate_detection.py
@@ -133,21 +123,18 @@ python evaluate_purification.py
 ```
 
 ### Interactive Demonstration
-
 ```bash
 streamlit run app.py
 ```
 
 
 ## Limitations
-
 * Evaluation is limited to the MNIST dataset.
 * Fixed detection thresholds may be vulnerable to adaptive adversaries.
 * Autoencoder capacity limits scalability to higher-resolution datasets.
 
 
 ## Future Scope
-
 * Extension to CIFAR-10 and ImageNet
 * Adaptive thresholding mechanisms
 * Defense against adaptive adversarial attacks
@@ -156,7 +143,6 @@ streamlit run app.py
 
 
 ## Project Information
-
 **Supervisor:** Dr. Sanjay B. Sonar
 
 **Contributors:**
@@ -166,7 +152,6 @@ streamlit run app.py
 
 
 ## 13.Demo
-
 Below is a screenshot of the **LUGAI Streamlit application**, which demonstrates detection and purification of adversarial inputs in real time.
 
 ![LUGAI Demo Screenshot](results/figures/image.png)
